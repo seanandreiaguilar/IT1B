@@ -1,0 +1,232 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>CS 1130 — Introduction to Computing (Dark Minimalist)</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Space+Grotesk:wght@400;600&display=swap" rel="stylesheet">
+
+  <style>
+    :root{
+      --bg-1:#0b1020;
+      --bg-2:#0f1724;
+      --muted:#9aa4b2;
+      --accent:#7dd3fc;
+      --accent-2:#60a5fa;
+      --shadow:0 6px 20px rgba(2,6,23,0.6);
+      --radius:12px;
+      --reset-color:rgba(200,200,200,0.2);
+    }
+
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{
+      font-family:'Inter',sans-serif;
+      color:#e6eef6;
+      background:linear-gradient(120deg,var(--bg-1),var(--bg-2));
+      min-height:100vh;
+      overflow-x:hidden;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      padding:30px 15px;
+      position:relative;
+    }
+
+    .animated-bg,.gradient-overlay,#bubbles{position:fixed;inset:0;pointer-events:none;z-index:-3;}
+    .animated-bg{background:radial-gradient(600px 400px at 10% 10%,rgba(96,165,250,0.06),transparent 8%),radial-gradient(700px 500px at 90% 90%,rgba(125,211,252,0.04),transparent 8%);animation:bgPulse 20s linear infinite;}
+    @keyframes bgPulse{0%{transform:scale(1)}50%{transform:scale(1.03)}100%{transform:scale(1)}}
+    .gradient-overlay{background:linear-gradient(90deg,rgba(125,211,252,0.06),rgba(96,165,250,0.03));animation:pan 14s linear infinite;opacity:.08;mix-blend-mode:overlay;}
+    @keyframes pan{from{background-position:0 0}to{background-position:100% 0}}
+
+    .bubble{position:absolute;border-radius:50%;background:rgba(125,211,252,0.08);box-shadow:0 0 10px rgba(125,211,252,0.15);animation:floatBubble linear infinite;filter:blur(1px);}
+    @keyframes floatBubble{0%{transform:translateY(0) scale(1);opacity:.5;}50%{opacity:.3;}100%{transform:translateY(-100vh) scale(1.2);opacity:0;}}
+
+    header{display:flex;align-items:center;gap:15px;background:rgba(255,255,255,0.03);padding:18px 25px;border-radius:15px;backdrop-filter:blur(8px);box-shadow:var(--shadow);margin-bottom:35px;}
+    .logo{width:50px;height:50px;border-radius:10px;background:linear-gradient(135deg,var(--accent),var(--accent-2));display:grid;place-items:center;font-family:'Space+Grotesk',sans-serif;font-weight:700;color:#071428;}
+    header h1{font-size:1.2rem;}
+    header p{color:var(--muted);font-size:0.85rem;}
+
+    main{display:grid;gap:20px;width:100%;max-width:1100px;}
+    section{background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.04);border-radius:var(--radius);padding:20px;box-shadow:var(--shadow);transition:transform .2s ease,box-shadow .2s ease;}
+    section:hover{transform:translateY(-5px);box-shadow:0 15px 35px rgba(2,6,23,0.7)}
+
+    section h2{display:flex;align-items:center;gap:10px;color:var(--accent);font-size:1rem;margin-bottom:10px}
+    p.muted{color:var(--muted);font-size:.9rem;margin-bottom:15px}
+
+    .row{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:10px;align-items:center}
+    label{min-width:120px;color:var(--muted);font-size:.9rem}
+    input[type=number]{flex:1;padding:10px 12px;border-radius:10px;border:1px solid rgba(255,255,255,0.05);background:rgba(255,255,255,0.02);color:#fff;outline:none;transition:border-color .2s,box-shadow .2s,background .2s;}
+    input[type=number]:focus{border-color:rgba(125,211,252,0.3);box-shadow:0 0 10px rgba(125,211,252,0.15);background:rgba(125,211,252,0.05);}
+
+    button.calc{border:none;border-radius:10px;background:rgba(125,211,252,0.1);color:var(--accent);font-weight:600;padding:10px 14px;cursor:pointer;transition:all .2s;}
+    button.calc:hover{background:rgba(125,211,252,0.2);transform:translateY(-3px);}
+    button.calc:active{transform:translateY(1px);opacity:.9;}
+
+    button.reset{border:none;border-radius:10px;background:var(--reset-color);color:var(--muted);font-weight:600;padding:10px 14px;cursor:pointer;transition:all .2s;margin-top:8px;}
+    button.reset:hover{background:rgba(200,200,200,0.3);color:#fff;transform:translateY(-2px);}
+    button.reset:active{transform:translateY(1px);opacity:.9;}
+
+    .output{margin-top:8px;color:var(--accent);opacity:0;transform:translateY(5px);transition:opacity .3s,transform .3s;font-weight:600;}
+    .output.show{opacity:1;transform:translateY(0);}
+    .output.hide{opacity:0;transform:translateY(5px);transition:opacity .3s,transform .3s;}
+
+    footer{margin-top:30px;color:var(--muted);font-size:.8rem;text-align:center;}
+
+    @media(min-width:850px){main{grid-template-columns:repeat(2,1fr);}section.wide{grid-column:1/-1}}
+  </style>
+</head>
+<body>
+  <div class="animated-bg"></div>
+  <div class="gradient-overlay"></div>
+  <div id="bubbles"></div>
+
+  <header>
+    <div class="logo">CS</div>
+    <div>
+      <h1>CS 1130 — Introduction to Computing</h1>
+      <p>by <strong style="color:var(--accent)">Sean Andrei Aguilar</strong></p>
+    </div>
+  </header>
+
+  <main>
+    <!-- Conversion -->
+    <section>
+      <h2>Conversion</h2>
+      <p class="muted">Convert between temperature and length values.</p>
+      <div class="row">
+        <label>Celsius:</label>
+        <input id="celsius" type="number" placeholder="Enter Celsius">
+        <button class="calc" onclick="convertCelsiusToFahrenheit()">To Fahrenheit</button>
+      </div>
+      <p id="celsiusResult" class="output"></p>
+
+      <div class="row">
+        <label>Fahrenheit:</label>
+        <input id="fahrenheit" type="number" placeholder="Enter Fahrenheit">
+        <button class="calc" onclick="convertFahrenheitToCelsius()">To Celsius</button>
+      </div>
+      <p id="fahrenheitResult" class="output"></p>
+
+      <div class="row">
+        <label>Meters:</label>
+        <input id="meters" type="number" placeholder="Enter Meters">
+        <button class="calc" onclick="convertMetersToFeet()">To Feet</button>
+      </div>
+      <p id="metersResult" class="output"></p>
+
+      <div class="row">
+        <label>Feet:</label>
+        <input id="feet" type="number" placeholder="Enter Feet">
+        <button class="calc" onclick="convertFeetToMeters()">To Meters</button>
+      </div>
+      <p id="feetResult" class="output"></p>
+
+      <button class="reset" onclick="resetConversion()">Reset Conversion</button>
+    </section>
+
+    <!-- Income Tax Calculator -->
+    <section>
+      <h2>Income Tax Calculator</h2>
+      <p class="muted">Calculate tax based on simple income brackets.</p>
+      <div class="row">
+        <label>Income:</label>
+        <input id="income" type="number" placeholder="Enter Income">
+        <button class="calc" onclick="calculateIncomeTax()">Calculate</button>
+      </div>
+      <p id="taxResult" class="output"></p>
+
+      <button class="reset" onclick="resetIncomeTax()">Reset Income Tax</button>
+    </section>
+
+    <!-- Factorial, Sum & Average -->
+    <section class="wide">
+      <h2>Factorial, Sum & Average</h2>
+      <p class="muted">Compute factorial, sum, and average of N.</p>
+      <div class="row">
+        <label>Enter N:</label>
+        <input id="nValue" type="number" placeholder="Enter a number">
+        <button class="calc" onclick="calculateFactorial()">Factorial</button>
+        <button class="calc" onclick="calculateSum()">Sum</button>
+        <button class="calc" onclick="calculateAverage()">Average</button>
+      </div>
+      <p id="factorialResult" class="output"></p>
+      <p id="sumResult" class="output"></p>
+      <p id="averageResult" class="output"></p>
+
+      <button class="reset" onclick="resetFactorialSumAverage()">Reset Factorial, Sum & Average</button>
+    </section>
+
+    <!-- Simple Payroll -->
+    <section>
+      <h2>Simple Payroll</h2>
+      <p class="muted">Calculate payroll using hours worked and hourly rate.</p>
+      <div class="row">
+        <label>Hours Worked:</label>
+        <input id="hoursWorked" type="number" placeholder="Enter hours worked">
+      </div>
+      <div class="row">
+        <label>Hourly Rate:</label>
+        <input id="hourlyRate" type="number" placeholder="Enter hourly rate">
+        <button class="calc" onclick="calculatePayroll()">Calculate</button>
+      </div>
+      <p id="payrollResult" class="output"></p>
+
+      <button class="reset" onclick="resetPayroll()">Reset Payroll</button>
+    </section>
+  </main>
+
+  <footer>© 2025 CS 1130 — Introduction to Computing</footer>
+
+  <script>
+    // Bubbles
+    const bubbleContainer=document.getElementById('bubbles');
+    for(let i=0;i<30;i++){
+      const b=document.createElement('div');
+      b.className='bubble';
+      const s=Math.random()*12+8;
+      b.style.width=`${s}px`;
+      b.style.height=`${s}px`;
+      b.style.left=`${Math.random()*100}%`;
+      b.style.bottom=`-${Math.random()*50}px`;
+      b.style.animationDuration=`${20+Math.random()*20}s`;
+      b.style.animationDelay=`${Math.random()*20}s`;
+      bubbleContainer.appendChild(b);
+    }
+
+    function showOutput(id,text){
+      const el=document.getElementById(id);
+      el.textContent=text;
+      el.classList.remove('hide');
+      el.classList.add('show');
+    }
+
+    function fadeOutOutput(el){
+      el.classList.remove('show');
+      el.classList.add('hide');
+      setTimeout(()=>el.textContent='',300);
+    }
+
+    // Conversion
+    function convertCelsiusToFahrenheit(){const c=parseFloat(celsius.value);if(isNaN(c))return;showOutput('celsiusResult',`${c} °C = ${(c*9/5+32).toFixed(2)} °F`)}
+    function convertFahrenheitToCelsius(){const f=parseFloat(fahrenheit.value);if(isNaN(f))return;showOutput('fahrenheitResult',`${f} °F = ${((f-32)*5/9).toFixed(2)} °C`)}
+    function convertMetersToFeet(){const m=parseFloat(meters.value);if(isNaN(m))return;showOutput('metersResult',`${m} m = ${(m*3.28084).toFixed(2)} ft`)}
+    function convertFeetToMeters(){const ft=parseFloat(feet.value);if(isNaN(ft))return;showOutput('feetResult',`${ft} ft = ${(ft/3.28084).toFixed(2)} m`)}
+    function resetConversion(){celsius.value=''; fahrenheit.value=''; meters.value=''; feet.value=''; fadeOutOutput(celsiusResult); fadeOutOutput(fahrenheitResult); fadeOutOutput(metersResult); fadeOutOutput(feetResult);}
+
+    // Income Tax
+    function calculateIncomeTax(){const income=parseFloat(document.getElementById('income').value);if(isNaN(income)) return;let tax=0;if(income<=25000) tax=income*0.05; else if(income<=50000) tax=income*0.1; else tax=income*0.15; showOutput('taxResult', Income Tax for ${income} = ${tax.toFixed(2)})}
+    function resetIncomeTax(){income.value=''; fadeOutOutput(taxResult);}
+
+    // Factorial, Sum & Average
+    function calculateFactorial(){const n=parseInt(nValue.value);if(isNaN(n)||n<0)return;let f=1;for(let i=2;i<=n;i++)f*=i;showOutput('factorialResult',`Factorial of ${n} = ${f}`)}
+    function calculateSum(){const n=parseInt(nValue.value);if(isNaN(n)||n<0)return;const sum=n*(n+1)/2;showOutput('sumResult',`Sum of numbers from 1 to ${n} = ${sum}`)}
+    function calculateAverage(){const n=parseInt(nValue.value);if(isNaN(n)||n<0)return;const avg=(n*(n+1)/2)/n;showOutput('averageResult',`Average of numbers from 1 to ${n} = ${avg.toFixed(2)}`)}
+    function resetFactorialSumAverage(){nValue.value=''; fadeOutOutput(factorialResult); fadeOutOutput(sumResult); fadeOutOutput(averageResult);}
+
+    // Payroll
+    function calculatePayroll(){const h=parseFloat(hoursWorked.value);const r=parseFloat(hourlyRate.value);if(isNaN(h)||isNaN(r))return;showOutput('payrollResult',`Payroll = ${(h*r).toFixed(2)}`)}
+    function resetPayroll(){hoursWorked.value=''; hourlyRate.value=''; fadeOutOutput(payrollResult);}
+  </script>
+</body>
+</html>
